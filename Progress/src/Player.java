@@ -12,44 +12,53 @@ public class Player
     static final String locationOfHashMapStorageFile = System.getProperty("user.home") + "/.pl episode data";
     static DataStorer storage = new DataStorer(locationOfHashMapStorageFile);
     static final String videoPlayerCommand = storage.getVideoPlayerCommand();
+
     public static void processArguments(String[] args)
     {
         if (args.length == 0)
         {
             playCurrentEpisode();
+            return;
         }
-        else
+        if (args[0].equals("-ln"))
         {
-            if (args[0].equals("-ln"))
+            try
             {
-                try
-                {
                 int nextEpisode = getNextEpisode();
                 System.out.println("next episode is number " + nextEpisode);
                 System.out.println(findNameOfFileToPlay(nextEpisode));
-                }
-                catch (Exception e)
-                {
-                    System.out.println("could not list name of next episode");
-                }
-                return;
             }
-            int episodeNumber;
-            try
+            catch (Exception e)
             {
-                episodeNumber = Integer.parseInt(args[0]);
-            }catch (NumberFormatException nfe)
-            {
-                System.out.println("First argument must be a number or valid command. Use -h for list of valid commands");
-                return;
+                System.out.println("could not list name of next episode");
             }
-            tryToPlayEpisode(episodeNumber);
+            return;
         }
+        int episodeNumber;
+        try
+        {
+            episodeNumber = Integer.parseInt(args[0]);
+        }
+        catch (NumberFormatException nfe)
+        {
+            System.out.println("First argument must be a number or valid command. Use -h for list of valid commands");
+            return;
+        }
+        tryToPlayEpisode(episodeNumber);
     }
 
     public static void playCurrentEpisode()
     {
-        tryToPlayEpisode(getNextEpisode());
+        int exitCode = tryToPlayEpisode(getNextEpisode());
+        if (exitCode == 1)
+        {
+            System.out.println("progress was saved");
+            try
+            {
+                ProgressTracker.changeRelativelyNumberOfEpsWatched(-1);
+            }
+            catch (Exception ignored){}
+        }
     }
 
     public static int getNextEpisode()
@@ -62,22 +71,24 @@ public class Player
         return hashMap.get(currentDirectory) + 1;
     }
 
-    public static void tryToPlayEpisode(int num)
+    public static int tryToPlayEpisode(int num)
     {
         String fileName;
         try
         {
             fileName = findNameOfFileToPlay(num);
-            String[] command = new String[]{"bash","-c",videoPlayerCommand + fileName};
+            String[] command = new String[]{"bash", "-c", videoPlayerCommand + fileName};
             ProcessBuilder processBuilder = new ProcessBuilder(command);
             processBuilder.inheritIO();
             Process process = processBuilder.start();
             process.waitFor();
             process.destroy();
+            return process.exitValue();
         }
         catch (Exception e)
         {
             System.out.println("file not found");
+            return -1;
         }
     }
 
