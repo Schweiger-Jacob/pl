@@ -34,14 +34,23 @@ public class ProgressTracker
                     case "-h" -> help();
                     case "-x" -> removeEntry(args);
                     case "-xx" -> removeEntriesInDirectory(args);
-                    case "--" -> changeRelativelyNumberOfEpsWatched(-1);
-                    case "++" -> changeRelativelyNumberOfEpsWatched(1);
+                    case "--" ->
+                    {
+                        changeRelativelyNumberOfEpsWatched(-1);
+                        printCurrentEpisode(currentDirectory);
+                    }
+                    case "++" ->
+                    {
+                        changeRelativelyNumberOfEpsWatched(1);
+                        printCurrentEpisode(currentDirectory);
+                    }
                     default -> System.out.println("Invalid arguments, use -h for help");
                 }
             }
             else
             {
                 changeRelativelyNumberOfEpsWatched(1);
+                printCurrentEpisode(currentDirectory);
             }
         }
         catch (IOException | ClassNotFoundException e)
@@ -230,7 +239,6 @@ public static void printCurrentEpisode(String location)
             hashMap.put(currentDirectory, amountToChangeBy);
         }
         storage.putHashMapInFile(hashMap);
-        printCurrentEpisode(currentDirectory);
 //        System.out.println(hashMap.get(currentDirectory) + " episodes watched");
     }
 }

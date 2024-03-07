@@ -16,6 +16,7 @@ public class Main
         switch (args[0])
         {
             case "-r", "-l", "-la", "-h", "-x", "-xx", "--", "++" -> ProgressTracker.main(args);
+            case "-n" -> Player.playCurrentEpisode();
             default -> Player.main(args);
         }
     }
